@@ -1,0 +1,38 @@
+{
+    "name": "mi-space",
+    "version": "1.0.0",
+    "description": "parking managenet system",
+    "main": "server.js",
+    "scripts": {
+        "start": "nodemon server.js",
+        "client": "npm start --prefix client",
+        "dev": "concurrently \"npm run start\" \"npm run client\""
+    },
+    "author": "andston",
+    "license": "ISC",
+    "dependencies": {
+        "bcryptjs": "^2.4.3",
+        "body-parser": "^1.19.0",
+        "body-parser-xml": "^2.0.0",
+        "cors": "^2.8.5",
+        "crypto": "^1.0.1",
+        "dotenv": "^8.2.0",
+        "express": "^4.17.1",
+        "jsonwebtoken": "^8.5.1",
+        "moment": "^2.27.0",
+        "multer": "^1.4.2",
+        "mysql": "^2.18.1",
+        "mysql2": "^2.1.0",
+        "node-cron": "^2.0.3",
+        "node-datetime": "^2.1.2",
+        "node-fetch": "^2.6.1",
+        "nodemon": "^2.0.4",
+        "randexp": "^0.5.3",
+        "randomatic": "^3.1.1",
+        "request": "^2.88.2",
+        "sequelize": "^5.21.4"
+    },
+    "devDependencies": {
+        "concurrently": "^5.3.0"
+    }
+}
