@@ -6,8 +6,9 @@ const { genSaltSync, hashSync, compareSync } = require('bcryptjs');
 const crypto = require("crypto");
 const randomize = require('randomatic');
 const dateTime = require('node-datetime');
-//const { checkToken } = require('../../auth/token.vaildation');
+const nodemailer = require('nodemailer'); 
 const AppusersModel = require('./appusers.model');
+const salt = genSaltSync(10);
 usersRoute.use(cors());
 
 /////////////////////////////////////Allow new admin users to sign up///////////////////////////////////////////
@@ -15,7 +16,6 @@ usersRoute.post('/create_account', (req, res) => {
     var dt = dateTime.create();
     var today = dt.format('Y-m-d H:M:S');
     const admin_id = crypto.randomBytes(20).toString('hex');
-    const salt = genSaltSync(10);
 
     const appusersData = {
         id: admin_id,
@@ -24,6 +24,7 @@ usersRoute.post('/create_account', (req, res) => {
         email: req.body.email,
         phone_number: req.body.phone_number,
         password: hashSync(req.body.password, salt),
+        reset_code: '',
         created_at: today,
         updated_at: today
     }
@@ -96,9 +97,9 @@ usersRoute.post('/login', (req, res) => {
 });
 
 /////////////////////////////////////Allow users to change passwords/////////////////////////////////////////////////
-usersRoute.put('/appusers/change_password/:id', (req, res) => {
+usersRoute.put('/change_password/:id', (req, res) => {
     const old_password = req.body.old_password;
-    const new_password = req.body.new_password;
+    const new_password = hashSync(req.body.new_password, salt);
 
     AppusersModel.findOne({
         where: {
@@ -109,23 +110,122 @@ usersRoute.put('/appusers/change_password/:id', (req, res) => {
         if (user) {
             if (compareSync(old_password, user.password)) {
 
-                AdminGpaidVendorModel.update({
-                    password: hashSync(new_password, salt),
-                    updated_at: today + " " + currentTime
+                AppusersModel.update({
+                    password: new_password
                 }, {
-                    where: {
-                        id: req.params.id
-                    }
+                    where: {email: req.body.email}
                 })
-                .then(user => res.json({
-                    message: 'Password changed successfully'
-                }));
+                .then(() => {
+                    res.json({
+                        message: 'Password changed successfully'
+                    })
+                })
+                .catch(err => {
+                    res.json({ error: err });
+                });
 
             } else {
                 res.json({
                     message: 'Current password is incorrect'
                 });
             }
+        }
+    })
+    .catch(err => {
+        res.json({ error: err });
+    });
+});
+
+/////////////////////////////////////Allow users to rest passwords/////////////////////////////////////////////////
+usersRoute.post('/forgot_password/', (req, res) => {
+    var vaildationCode = randomize('0', 5);
+
+    AppusersModel.findOne({
+        where: {
+            email: req.body.email
+        }
+    })
+    .then(user => {
+        if (user) {
+            //step 1
+            let transporter = nodemailer.createTransport({
+                //service: 'andstonsolutions.com',
+                host: 'andstonsolutions.com',
+                port: 465,
+                secure: true,
+                auth: {
+                    user: process.env.EMAIL,
+                    pass: process.env.PASSWORD
+                }
+            });
+
+            //step 2  
+            let mailOptions = {
+                from: process.env.EMAIL, 
+                to: user.email,
+                subject: 'Rest mi-space account password',
+                text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. Use this vaildation code'+
+                ' '+ vaildationCode + ' to reset password'
+            }
+
+            //step 3
+            transporter.sendMail(mailOptions, (err, data) => {
+                if(err){
+                    console.log(err);
+                }
+                else{
+                    console.log('Email sent..!!');
+
+                    AppusersModel.update({
+                        reset_code: vaildationCode
+                    }, {
+                        where: {email: req.body.email}
+                    })
+                    .then(() => {
+                        res.json({
+                            message: 'Email sent'
+                        })
+                    })
+                }
+            })
+        }else{
+            res.json({
+                message: 'Email doesnot exit'
+            })
+        }
+    })
+    .catch(err => {
+        res.json({ error: err });
+    });
+});
+
+/////////////////////////////////////Allow users to rest passwords/////////////////////////////////////////////////
+usersRoute.post('/reset_password/', (req, res) => {
+    var vaildationCode = req.body.vaildation_code;
+    var new_password = hashSync(req.body.new_password, salt);
+
+    AppusersModel.findOne({
+        where: {
+            email: req.body.email,
+            reset_code: vaildationCode
+        }
+    })
+    .then(user => {
+        if (user) {
+            AppusersModel.update({
+                password: new_password
+            },{
+                where: {email: req.body.email}
+            })
+            .then(() => {
+                res.json({
+                    message: 'Password has been reset successfully..'
+                });
+            })
+        }else{
+            res.json({
+                message: 'Incorrent vaildation code. Check your email and try again..'
+            });
         }
     })
     .catch(err => {

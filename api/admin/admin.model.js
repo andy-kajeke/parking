@@ -17,6 +17,9 @@ module.exports = db.sequelize.define(
         password: {
             type: Sequelize.STRING
         },
+        reset_code: {
+            type: Sequelize.STRING
+        },
         created_at: {
             type: Sequelize.STRING
         },

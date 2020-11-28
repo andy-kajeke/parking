@@ -223,7 +223,7 @@ ParkingRoute.post('/bookings/book', (req, res) => {
         startTime: req.body.startTime,
         endTime: req.body.endTime,
         totalTime: req.body.totalTime,
-        payment: '0',
+        payment: req.body.payment,
         transactionId: '',
         payment_status: 'PENDING',
         parking_status: 'Free',
@@ -266,25 +266,31 @@ ParkingRoute.post('/deposit/payment/booking', (req, res) => {
     //http://vendors-gpaid.akhaninnovates.com
 
     if(res.statusCode == 200){
-        fetch('http://vendors-gpaid.akhaninnovates.com:2020/webapi/transaction/deposit', {
+        fetch('http://vendors-gpaid.akhaninnovates.com/webapi/transaction/deposit', {
             method: 'POST',
             body: JSON.stringify(paymentData),
-           headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json' }
         })
         .then(res => res.json())  
         .then(response => {
             console.log(response) 
             res.send(response)
 
-            if(response.message == 'Transaction is being processed'){ 
+            if(response['message'] == 'Transaction is being processed'){ 
                 BookingModel.findOne({
-                    booking_code: bookingCode,
-                    slot_name: slotLable,
-                    landlord_code: landlordCode
+                    where: {
+                        booking_code: bookingCode,
+                        slot_name: slotLable,
+                        landlord_code: landlordCode
+                    }
                 }).then(() => {
                     BookingModel.update({
-                        transactionId: response.transactionId,
+                        transactionId: response['transactionId'],
                         payment: amount
+                    },{
+                        where: {
+                            booking_code: bookingCode,  
+                        }
                     })
                 }) 
             }
@@ -428,9 +434,15 @@ ParkingRoute.get('/bookings/all/value/accountBalances', (req, res) => {
 /////////////////////////////////////Get all bookings of a app users/////////////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/appusers/:user_id', (req, res) => {
     BookingModel.findAll(
-        {where: {
-            user_id: req.params.user_id 
-        }}
+        {
+            where: {
+            user_id: req.params.user_id,
+            payment_status: 'SUCCESS' 
+        },
+        order : [
+            ['updated_at', 'DESC']
+        ]
+    }
     ).then(bookings => res.json({ bookings }));
 });
 
