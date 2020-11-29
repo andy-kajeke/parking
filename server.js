@@ -73,13 +73,15 @@ const parkingRouter = require('./api/parking/parking.router');
 const accountsRouter = require('./api/accounts/accounts.router');
 const bookingsRouter = require('./api/bookings/bookings.router');
 const calendarRouter = require('./api/calendar/calendar.router');
+const supportRouter = require('./api/support/support.router');
 
 app.use('/webapi/adminuser', adminRouter);
-app.use('/webapi/appuser/', appusersRouter);
+app.use('/webapi/appuser', appusersRouter);
 app.use('/webapi/geographics', geographicsRouter);
 app.use('/webapi/parking', parkingRouter);
 app.use('/webapi/accounts', accountsRouter);
 app.use('/webapi/bookings', bookingsRouter);
 app.use('/webapi/calendar', calendarRouter);
+app.use('/webapi/support', supportRouter);
 app.use('/item_photo', express.static('item_photos/'));
 

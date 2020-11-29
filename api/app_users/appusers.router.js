@@ -20,7 +20,7 @@ usersRoute.post('/create_account', (req, res) => {
     const appusersData = {
         id: admin_id,
         username: req.body.username,
-        gender: req.body.gender,
+        gender: '',
         email: req.body.email,
         phone_number: req.body.phone_number,
         password: hashSync(req.body.password, salt),
@@ -38,10 +38,38 @@ usersRoute.post('/create_account', (req, res) => {
         if (!user) {
             AppusersModel.create(appusersData)
                 .then(user => {
-                    res.json({ 
-                        success: true,
-                        message: user.username + ' welcome to Mi-space, you can now login' 
+                    //step 1
+                    let transporter = nodemailer.createTransport({
+                        host: 'andstonsolutions.com',
+                        port: 465,
+                        secure: true,
+                        auth: {
+                            user: process.env.EMAIL,
+                            pass: process.env.PASSWORD
+                        }
                     });
+
+                    //step 2  
+                    let mailOptions = {
+                        from: process.env.EMAIL, 
+                        to: user.email,
+                        subject: 'Mi-space Account Signup',
+                        text: 'Hello ' + user.username + ', \nWelcome to Mi-space, your account has been created successfully. \n'+ 
+                        'You can now login to enjoy the services. \nThank you.'
+                    }
+                    //step 3
+                    transporter.sendMail(mailOptions, (err, data) => {
+                        if(err){
+                            console.log(err);
+                        }
+                        else{
+                            console.log('Email sent..!!');
+                            res.json({ 
+                                success: true,
+                                message: 'Hello ' + user.username + ', \nWelcome to Mi-space, you can now login and enjoy the services.' 
+                            });
+                        }
+                    })
                 })
                 .catch(err => {
                     res.send('error: ' + err);
@@ -163,7 +191,7 @@ usersRoute.post('/forgot_password/', (req, res) => {
             let mailOptions = {
                 from: process.env.EMAIL, 
                 to: user.email,
-                subject: 'Rest mi-space account password',
+                subject: 'Rest Mi-space Account Password',
                 text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. Use this vaildation code'+
                 ' '+ vaildationCode + ' to reset password'
             }
