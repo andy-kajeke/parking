@@ -25,45 +25,82 @@ app.listen(process.env.APP_PORT, () => {
     console.log('server is running at http://localhost:' + process.env.APP_PORT);
 });
 
-////////////////////////////////////Date and time//////////////////////////////////////////////////////////////
-var date = new Date();
-let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
-var hours = date.getHours();
-var minutes = date.getMinutes();
-var seconds = date.getSeconds();
-var ampm = hours >= 12 ? 'PM' : 'AM';
-hours = hours % 12;
-hours = hours ? hours : 12; // the hour '0' should be '12'
-minutes = minutes < 10 ? '0' + minutes : minutes;
-
-var currentTime = hours + ':' + minutes + ' ' + ampm;
-
 /////////////////update parking_status in booking table//////////////////////////////////////////
-var parkingStatus = cronJob.schedule('* * * * *', () => {
+var parkingStatus_startTime = cronJob.schedule('* * * * * *', () => {
+    var date = new Date();
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ' ' + ampm;
     
-    // console.log('updating booking table every 6mins');
-    // BookingModel.findOne({
-    //     where: {
-    //         created_at: today
-    //     }
-    // }).then(record => {
-    //     if(record){
-    //         BookingModel.update({
-    //             parking_status: 'Expired' 
-    //         }, {
-    //             where: { 
-    //                 created_at: today,
-    //                 endTime: currentTime
-    //             }
-    //         }).then(() => {
-    //             console.log('updated record');
-    //         })
-    //     }
-    // })
+    BookingModel.findOne({
+        where: {
+            created_at: today,
+            payment_status:'SUCCESS'
+        }
+    }).then(record => {
+        if(record){
+            if(record.startTime == currentTime){
+                BookingModel.update({
+                    parking_status: 'On going' 
+                }, {
+                    where: { 
+                        created_at: today,
+                        startTime: currentTime
+                    }
+                }).then(() => {
+                    console.log('updated record');
+                })
+            }
+            else{}
+        }
+    })
 });
 
-cronJob.schedule('* * * * *', () => {
-    parkingStatus.start();
+var parkingStatus_endTime = cronJob.schedule('* * * * * *', () => {
+    var date = new Date();
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ' ' + ampm;
+
+    BookingModel.findOne({
+        where: {
+            created_at: today,
+            payment_status:'SUCCESS'
+        }
+    }).then(record => {
+        if(record){
+            if(record.endTime == currentTime){
+                BookingModel.update({
+                    parking_status: 'Expired' 
+                }, {
+                    where: { 
+                        created_at: today,
+                        endTime: currentTime
+                    }
+                }).then(() => {
+                    console.log('updated record');
+                })
+            }
+            else{}
+        }
+    })
+});
+
+cronJob.schedule('* * * * * *', () => {
+    parkingStatus_startTime.start();
+    parkingStatus_endTime.start();
 });
 
 const adminRouter = require('./api/admin/admin.router');

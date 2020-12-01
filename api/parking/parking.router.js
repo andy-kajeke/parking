@@ -218,7 +218,7 @@ ParkingRoute.post('/totalDurration', (req,res) => {
 });
 
 /////////////////////////////////////Adding new booking///////////////////////////////////////////
-ParkingRoute.post('/bookings/book', (req, res) => {
+ParkingRoute.post('/book/now', (req, res) => {
     var date = new Date();
     var monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
@@ -497,7 +497,8 @@ ParkingRoute.get(`/bookings/all/today/slot/:slot_name/:created_at`, (req, res) =
     BookingModel.findAll(
         {where: {
             slot_name: req.params.slot_name,
-            created_at: req.params.created_at 
+            created_at: req.params.created_at,
+            payment_status: 'SUCCESS' 
         }}
     ).then(bookings => res.json({ bookings }));
 });
