@@ -17,25 +17,24 @@ const AccountBalanceModel = require('../accounts/accountBalance.model');
 ParkingRoute.use(cors());
 
 ////////////////////////////////////Date and time//////////////////////////////////////////////////////////////
-var date = new Date();
-var monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
-
-var hours = date.getHours();
-var minutes = date.getMinutes();
-var seconds = date.getSeconds();
-var ampm = hours >= 12 ? 'pm' : 'am';
-hours = hours % 12;
-hours = hours ? hours : 12; // the hour '0' should be '12'
-minutes = minutes < 10 ? '0' + minutes : minutes;
-
-var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
 
 /////////////////////////////////////Adding new landlord///////////////////////////////////////////
 ParkingRoute.post('/landlord/register', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
     var landlordCode = randomize('0', 6);
     const parking_id = crypto.randomBytes(15).toString('hex');
 
@@ -141,6 +140,21 @@ ParkingRoute.put('/update-info/:id', (req, res) => {
 
 /////////////////////////////////////Adding new charge///////////////////////////////////////////
 ParkingRoute.post('/charge/register', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
     var landlordCode = randomize('0', 4);
     const charge_id = crypto.randomBytes(15).toString('hex');
 
@@ -205,6 +219,20 @@ ParkingRoute.post('/totalDurration', (req,res) => {
 
 /////////////////////////////////////Adding new booking///////////////////////////////////////////
 ParkingRoute.post('/bookings/book', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
+
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
 
     var bookingCode = randomize('0', 7);
     const booking_id = crypto.randomBytes(15).toString('hex');
@@ -360,6 +388,10 @@ ParkingRoute.get('/bookings/all', (req, res) => {
 
 /////////////////////////////////////Get all bookings monthly value/////////////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/bookingsValue', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
     BookingModel.sum(
         'payment',
         {
@@ -385,6 +417,10 @@ ParkingRoute.get('/bookings/all/landlord/:landlord_code', (req, res) => {
 
 /////////////////////////////////////Get all bookings mothly value for landlords////////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/landlord/bookingsValue/:landlord_code', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+        "July", "August", "September", "October", "November", "December"
+    ];
     BookingModel.sum(
         'payment',
         {

@@ -47,7 +47,7 @@ SupportRoute.post('/helpLine/add', (req, res) => {
 
 /////////////////////////////////////Get help lines/////////////////////////////////////////////////////////
 SupportRoute.get('/helpLine', (req, res) => {
-    HelpLineModel.findAll().then(helpLineNumber => res.json({ helpLineNumber }));
+    HelpLineModel.findOne().then(helpLineNumber => res.json({ line: helpLineNumber.number }));
 });
 
 module.exports = SupportRoute;
