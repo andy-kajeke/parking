@@ -6,38 +6,47 @@ const { genSaltSync, hashSync, compareSync } = require('bcryptjs');
 const crypto = require("crypto");
 const randomize = require('randomatic');
 const dateTime = require('node-datetime');
-const nodemailer = require('nodemailer'); 
-const AppusersModel = require('./appusers.model');
+const nodemailer = require('nodemailer');
+const BusinessAdminModel = require('./business.model');
 const salt = genSaltSync(10);
 usersRoute.use(cors());
 
 /////////////////////////////////////Allow new admin users to sign up///////////////////////////////////////////
 usersRoute.post('/create_account', (req, res) => {
-    var dt = dateTime.create();
-    var today = dt.format('Y-m-d H:M:S');
     const admin_id = crypto.randomBytes(20).toString('hex');
 
-    const appusersData = {
+    var date = new Date();
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ' ' + ampm + seconds;
+
+    const businessAdminData = {
         id: admin_id,
-        username: req.body.username,
-        gender: '',
+        property_name: req.body.property_name,
+        landlord_code: req.body.landlord_code,
         email: req.body.email,
-        phone_number: req.body.phone_number,
         password: hashSync(req.body.password, salt),
         reset_code: '',
-        created_at: today,
-        updated_at: today
+        created_at: today + " " + currentTime,
+        updated_at: today + " " + currentTime
     }
 
-    AppusersModel.findOne({
+    BusinessAdminModel.findOne({
         where: {
             email: req.body.email
         }
     })
     .then(user => {
         if (!user) {
-            AppusersModel.create(appusersData)
+            BusinessAdminModel.create(businessAdminData)
                 .then(user => {
+
                     //step 1
                     let transporter = nodemailer.createTransport({
                         host: 'andstonsolutions.com',
@@ -53,11 +62,13 @@ usersRoute.post('/create_account', (req, res) => {
                     let mailOptions = {
                         from: process.env.EMAIL, 
                         to: user.email,
-                        subject: 'Mi-space Account Signup',
-                        text: 'Hello ' + user.username + ', \nWelcome to Mi-space, your account has been created successfully. \n'+ 
-                        'You can now login to enjoy the services. \nThank you.'
+                        subject: 'Mi-space Account Opening Confirmation',
+                        text: 'Hello ' + user.property_name + ', \nWelcome to Mi-space, your account has been created successfully. \n\n'+ 
+                        'Here are your access credentials to mi-space portal. \nLink: https://mispace.andstonsolutions.com \n'+
+                        'Email: '+ user.email + '\nPassword: '+ req.body.password + '\n\nNote: You are requested to change this password '+
+                        'for security reasons just in case. \nThank you.'
                     }
-                    //step 3
+                    //step 3 send confirmatiom email
                     transporter.sendMail(mailOptions, (err, data) => {
                         if(err){
                             console.log(err);
@@ -66,7 +77,7 @@ usersRoute.post('/create_account', (req, res) => {
                             console.log('Email sent..!!');
                             res.json({ 
                                 success: true,
-                                message: 'Hello ' + user.username + ', \nWelcome to Mi-space, you can now login and enjoy the services.' 
+                                message: user.property_name + ' Register' 
                             });
                         }
                     })
@@ -83,9 +94,9 @@ usersRoute.post('/create_account', (req, res) => {
     })
 });
 
-/////////////////////////////////////Allow users to login/////////////////////////////////////////////////
-usersRoute.post('/login', (req, res) => {
-    AppusersModel.findOne({
+/////////////////////////////////////Allow users to login on the portal/////////////////////////////////////////////////
+usersRoute.post('/portal/login', (req, res) => {
+    BusinessAdminModel.findOne({
             where: {
                 email: req.body.email
             }
@@ -100,9 +111,9 @@ usersRoute.post('/login', (req, res) => {
                     res.json({
                         is_user: true,
                         id: user.id,
-                        username: user.username,
+                        property_name: user.property_name,
+                        landlord_code: user.landlord_code,
                         email: user.email,
-                        phone_number: user.phone_number,
                         message: 'Logged in successfully',
                         userToken: token
                     });
@@ -124,12 +135,41 @@ usersRoute.post('/login', (req, res) => {
         });
 });
 
+/////////////////////////////////////Allow users to login on mobile gate/////////////////////////////////////////////////
+usersRoute.post('/mobile_gate/login', (req, res) => {
+    BusinessAdminModel.findOne({
+            where: {
+                landlord_code: req.body.landlord_code
+            }
+        })
+        .then(user => {
+            if (user) {
+                res.json({
+                    is_user: true,
+                    id: user.id,
+                    property_name: user.property_name,
+                    landlord_code: user.landlord_code,
+                    email: user.email,
+                    message: 'Logged in successfully',
+                });
+            } else {
+                res.json({
+                    is_user: false,
+                    message: 'Landlord does not exist'
+                });
+            }
+        })
+        .catch(err => {
+            res.json({ error: err });
+        });
+});
+
 /////////////////////////////////////Allow users to change passwords/////////////////////////////////////////////////
 usersRoute.put('/change_password/:id', (req, res) => {
     const old_password = req.body.old_password;
     const new_password = hashSync(req.body.new_password, salt);
 
-    AppusersModel.findOne({
+    BusinessAdminModel.findOne({
         where: {
             email: req.body.email
         }
@@ -138,7 +178,7 @@ usersRoute.put('/change_password/:id', (req, res) => {
         if (user) {
             if (compareSync(old_password, user.password)) {
 
-                AppusersModel.update({
+                BusinessAdminModel.update({
                     password: new_password
                 }, {
                     where: {email: req.body.email}
@@ -168,7 +208,7 @@ usersRoute.put('/change_password/:id', (req, res) => {
 usersRoute.post('/forgot_password/', (req, res) => {
     var vaildationCode = randomize('0', 5);
 
-    AppusersModel.findOne({
+    BusinessAdminModel.findOne({
         where: {
             email: req.body.email
         }
@@ -192,7 +232,7 @@ usersRoute.post('/forgot_password/', (req, res) => {
                 from: process.env.EMAIL, 
                 to: user.email,
                 subject: 'Rest Mi-space Account Password',
-                text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. Use this vaildation code'+
+                text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. Use this verification code'+
                 ' '+ vaildationCode + ' to reset password'
             }
 
@@ -204,7 +244,7 @@ usersRoute.post('/forgot_password/', (req, res) => {
                 else{
                     console.log('Email sent..!!');
 
-                    AppusersModel.update({
+                    BusinessAdminModel.update({
                         reset_code: vaildationCode
                     }, {
                         where: {email: req.body.email}
@@ -232,7 +272,7 @@ usersRoute.post('/reset_password/', (req, res) => {
     var vaildationCode = req.body.vaildation_code;
     var new_password = hashSync(req.body.new_password, salt);
 
-    AppusersModel.findOne({
+    BusinessAdminModel.findOne({
         where: {
             email: req.body.email,
             reset_code: vaildationCode
@@ -240,7 +280,7 @@ usersRoute.post('/reset_password/', (req, res) => {
     })
     .then(user => {
         if (user) {
-            AppusersModel.update({
+            BusinessAdminModel.update({
                 password: new_password
             },{
                 where: {email: req.body.email}
@@ -261,11 +301,10 @@ usersRoute.post('/reset_password/', (req, res) => {
     });
 });
 
-//////////////////////////////////Get all app users////////////////////////////////////////////
-usersRoute.get('/', (req, res) => {
-    AppusersModel.findAll().then((app_users) => {
-        res.json({app_users});
-    })
-})
-
 module.exports = usersRoute;
+
+
+
+
+
+

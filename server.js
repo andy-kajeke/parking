@@ -26,7 +26,7 @@ app.listen(process.env.APP_PORT, () => {
 });
 
 /////////////////update parking_status in booking table//////////////////////////////////////////
-var parkingStatus_startTime = cronJob.schedule('* * * * * *', () => {
+cronJob.schedule('* * * * * *', () => {
     var date = new Date();
     let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
     var hours = date.getHours();
@@ -38,6 +38,7 @@ var parkingStatus_startTime = cronJob.schedule('* * * * * *', () => {
     minutes = minutes < 10 ? '0' + minutes : minutes;
     var currentTime = hours + ':' + minutes + ' ' + ampm;
     
+    console.log(currentTime);
     BookingModel.findOne({
         where: {
             created_at: today,
@@ -45,7 +46,7 @@ var parkingStatus_startTime = cronJob.schedule('* * * * * *', () => {
         }
     }).then(record => {
         if(record){
-            if(record.startTime == currentTime){
+            if(record.startTime === currentTime){
                 BookingModel.update({
                     parking_status: 'On going' 
                 }, {
@@ -62,7 +63,7 @@ var parkingStatus_startTime = cronJob.schedule('* * * * * *', () => {
     })
 });
 
-var parkingStatus_endTime = cronJob.schedule('* * * * * *', () => {
+cronJob.schedule('* * * * * *', () => {
     var date = new Date();
     let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
     var hours = date.getHours();
@@ -81,7 +82,7 @@ var parkingStatus_endTime = cronJob.schedule('* * * * * *', () => {
         }
     }).then(record => {
         if(record){
-            if(record.endTime == currentTime){
+            if(record.endTime = currentTime){
                 BookingModel.update({
                     parking_status: 'Expired' 
                 }, {
@@ -98,13 +99,16 @@ var parkingStatus_endTime = cronJob.schedule('* * * * * *', () => {
     })
 });
 
-cronJob.schedule('* * * * * *', () => {
-    parkingStatus_startTime.start();
-    parkingStatus_endTime.start();
-});
+// cronJob.schedule('* * * * * *', () => {
+//     parkingStatus_startTime.start();
+// });
+// cronJob.schedule('* * * * * *', () => {
+//     parkingStatus_endTime.start();
+// });
 
 const adminRouter = require('./api/admin/admin.router');
 const appusersRouter = require('./api/app_users/appusers.router');
+const businessRouter = require('./api/business/business.router');
 const geographicsRouter = require('./api/geographics/geographics.router');
 const parkingRouter = require('./api/parking/parking.router');
 const accountsRouter = require('./api/accounts/accounts.router');
@@ -114,6 +118,7 @@ const supportRouter = require('./api/support/support.router');
 
 app.use('/webapi/adminuser', adminRouter);
 app.use('/webapi/appuser', appusersRouter);
+app.use('/webapi/business', businessRouter);
 app.use('/webapi/geographics', geographicsRouter);
 app.use('/webapi/parking', parkingRouter);
 app.use('/webapi/accounts', accountsRouter);

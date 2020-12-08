@@ -32,8 +32,12 @@ BookingsRoute.get('/:month/:year', (req, res) => {
         {
             where: {
                 month: req.params.month,
-                year: req.params.year
-            }
+                year: req.params.year,
+                payment_status: 'SUCCESS',
+            },
+            order: [
+                ['updated_at', 'ASC']
+            ]
         }
     ).then(bookings => {
         res.json({bookings})
@@ -45,8 +49,12 @@ BookingsRoute.get('/:year', (req, res) => {
     BookingModel.findAll(
         {
             where: {
-                year: req.params.year
-            }
+                year: req.params.year,
+                payment_status: 'SUCCESS',
+            },
+            order: [
+                ['updated_at', 'ASC']
+            ]
         }
     ).then(bookings => {
         res.json({bookings})
@@ -60,8 +68,12 @@ BookingsRoute.get('/:landlord_code/:month/:year', (req, res) => {
             where: {
                 landlord_code: req.params.landlord_code,
                 month: req.params.month,
-                year: req.params.year
-            }
+                year: req.params.year,
+                payment_status: 'SUCCESS'
+            },
+            order: [
+                ['created_at', 'ASC']
+            ]
         }
     ).then(bookings => {
         res.json({bookings})
@@ -74,8 +86,12 @@ BookingsRoute.get('/:landlord_code/:year/all/bookings', (req, res) => {
         {
             where: {
                 landlord_code: req.params.landlord_code,
-                year: req.params.year
-            }
+                year: req.params.year,
+                payment_status: 'SUCCESS'
+            },
+            order: [
+                ['month', 'ASC']
+            ]
         }
     ).then(bookings => {
         res.json({bookings})

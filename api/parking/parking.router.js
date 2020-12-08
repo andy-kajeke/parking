@@ -381,7 +381,8 @@ ParkingRoute.post('/deposit/payment/booking/update', (req, res, body) => {
 ParkingRoute.get('/bookings/all', (req, res) => {
     BookingModel.findAll(
         {order : [
-            ['updated_at', 'DESC']
+            ['updated_at', 'DESC'],
+            ['startTime', 'DESC']
         ]}
     ).then(bookings => res.json({ bookings }));
 });
@@ -410,7 +411,11 @@ ParkingRoute.get('/bookings/all/landlord/:landlord_code', (req, res) => {
         {
             where: {
                 landlord_code: req.params.landlord_code  
-            }
+            },
+            order: [
+                ['updated_at', 'DESC'],
+                ['startTime', 'DESC']
+            ]
         }
     ).then(bookings => res.json({ bookings }));
 });
@@ -418,6 +423,16 @@ ParkingRoute.get('/bookings/all/landlord/:landlord_code', (req, res) => {
 /////////////////////////////////////Get all bookings mothly value for landlords////////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/landlord/bookingsValue/:landlord_code', (req, res) => {
     var date = new Date();
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'pm' : 'am';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
+
     var monthNames = ["January", "February", "March", "April", "May", "June",
         "July", "August", "September", "October", "November", "December"
     ];
@@ -425,6 +440,7 @@ ParkingRoute.get('/bookings/all/landlord/bookingsValue/:landlord_code', (req, re
         'payment',
         {
             where: {
+                landlord_code: req.params.landlord_code,
                 payment_status: 'SUCCESS',
                 month: monthNames[date.getMonth()], 
                 year: date.getFullYear()
@@ -437,7 +453,8 @@ ParkingRoute.get('/bookings/all/landlord/bookingsValue/:landlord_code', (req, re
             AccountBalanceModel.update({
                 actual_balance: '0.00',
                 commission: '0.00',
-                available_balance: '0.00'
+                available_balance: '0.00',
+                created_at: today + " " + currentTime
             },{
                 where: {landlord_code: req.params.landlord_code}
             });
@@ -461,6 +478,18 @@ ParkingRoute.get('/bookings/all/landlord/bookingsValue/:landlord_code', (req, re
 /////////////////////////////////////Get all account balances/////////////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/value/accountBalances', (req, res) => {
     AccountBalanceModel.findAll({
+        order : [
+            ['created_at', 'DESC']
+        ]
+    }).then(accounts => res.json({ accounts }));
+});
+
+/////////////////////////////////////Get account balances by landlord_code//////////////////////////////////////////////
+ParkingRoute.get('/bookings/all/value/accountBalances/:landlord_code', (req, res) => {
+    AccountBalanceModel.findAll({
+        where:{
+            landlord_code: req.params.landlord_code
+        },
         order : [
             ['created_at', 'DESC']
         ]
@@ -499,7 +528,11 @@ ParkingRoute.get(`/bookings/all/today/slot/:slot_name/:created_at`, (req, res) =
             slot_name: req.params.slot_name,
             created_at: req.params.created_at,
             payment_status: 'SUCCESS' 
-        }}
+        },
+        order: [
+            ['startTime', 'DESC']
+        ]
+    }
     ).then(bookings => res.json({ bookings }));
 });
 

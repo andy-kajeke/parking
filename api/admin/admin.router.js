@@ -13,9 +13,18 @@ usersRoute.use(cors());
 
 /////////////////////////////////////Allow new admin users to sign up///////////////////////////////////////////
 usersRoute.post('/create_account', (req, res) => {
-    var dt = dateTime.create();
-    var today = dt.format('Y-m-d H:M:S');
     const admin_id = crypto.randomBytes(20).toString('hex');
+
+    var date = new Date();
+    let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
+    var hours = date.getHours();
+    var minutes = date.getMinutes();
+    var seconds = date.getSeconds();
+    var ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    var currentTime = hours + ':' + minutes + ' ' + ampm + seconds;
 
     const adminData = {
         id: admin_id,
@@ -23,8 +32,8 @@ usersRoute.post('/create_account', (req, res) => {
         email: req.body.email,
         password: hashSync(req.body.password, salt),
         reset_code: '',
-        created_at: today,
-        updated_at: today
+        created_at: today + " " + currentTime,
+        updated_at: today + " " + currentTime
     }
 
     AdminModel.findOne({
