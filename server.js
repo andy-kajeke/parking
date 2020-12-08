@@ -36,9 +36,8 @@ cronJob.schedule('* * * * * *', () => {
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0' + minutes : minutes;
-    var currentTime = hours + ':' + minutes + ' ' + ampm;
+    var currentTime = (hours + ':' + minutes + ' ' + ampm).toString();
     
-    console.log(currentTime);
     BookingModel.findOne({
         where: {
             created_at: today,
@@ -46,7 +45,7 @@ cronJob.schedule('* * * * * *', () => {
         }
     }).then(record => {
         if(record){
-            if(record.startTime === currentTime){
+            if((record.startTime).normalize() === currentTime.normalize()){
                 BookingModel.update({
                     parking_status: 'On going' 
                 }, {
@@ -58,7 +57,16 @@ cronJob.schedule('* * * * * *', () => {
                     console.log('updated record');
                 })
             }
-            else{}
+        }
+        else{ 
+            BookingModel.update({
+                parking_status: 'Expired' 
+            }, {
+                where: { 
+                }
+            }).then(() => {
+                console.log(currentTime);
+            })
         }
     })
 });
@@ -73,7 +81,7 @@ cronJob.schedule('* * * * * *', () => {
     hours = hours % 12;
     hours = hours ? hours : 12; // the hour '0' should be '12'
     minutes = minutes < 10 ? '0' + minutes : minutes;
-    var currentTime = hours + ':' + minutes + ' ' + ampm;
+    var currentTime = (hours + ':' + minutes + ' ' + ampm).toString();
 
     BookingModel.findOne({
         where: {
@@ -82,9 +90,9 @@ cronJob.schedule('* * * * * *', () => {
         }
     }).then(record => {
         if(record){
-            if(record.endTime = currentTime){
+            if((record.endTime).normalize() === currentTime.normalize()){
                 BookingModel.update({
-                    parking_status: 'Expired' 
+                    parking_status: 'Time Out' 
                 }, {
                     where: { 
                         created_at: today,
