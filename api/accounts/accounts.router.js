@@ -59,6 +59,17 @@ AccountsRoute.get('/withdraws', (req, res) => {
 });
 
 //////////////////////////////////Get all withdraws by business code////////////////////////////////////////////////////////
+AccountsRoute.get('/withdraws/:landlord_code', (req, res) => {
+    WithdrawModel.findAll({
+        where: {
+            landlord_code: req.params.landlord_code,
+        }
+    }).then(withdraws => {
+        res.json({withdraws})
+    });
+});
+
+//////////////////////////////////Get all withdraws by business code////////////////////////////////////////////////////////
 AccountsRoute.get('/withdraws/:landlord_code/:year', (req, res) => {
     WithdrawModel.findAll({
         where: {

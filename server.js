@@ -40,23 +40,20 @@ cronJob.schedule('* * * * * *', () => {
     
     BookingModel.findOne({
         where: {
-            created_at: today,
-            payment_status:'SUCCESS'
+            created_at: today
         }
     }).then(record => {
         if(record){
-            if((record.startTime).normalize() === currentTime.normalize()){
-                BookingModel.update({
-                    parking_status: 'On going' 
-                }, {
-                    where: { 
-                        created_at: today,
-                        startTime: currentTime
-                    }
-                }).then(() => {
-                    console.log('updated record');
-                })
-            }
+            BookingModel.update({
+                parking_status: 'On going' 
+            }, {
+                where: { 
+                    payment_status:'SUCCESS',
+                    startTime: currentTime
+                }
+            }).then(() => {
+                console.log('updated record');
+            })
         }
         else{ 
             BookingModel.update({
@@ -85,25 +82,22 @@ cronJob.schedule('* * * * * *', () => {
 
     BookingModel.findOne({
         where: {
-            created_at: today,
-            payment_status:'SUCCESS'
+            created_at: today
         }
     }).then(record => {
         if(record){
-            if((record.endTime).normalize() === currentTime.normalize()){
-                BookingModel.update({
-                    parking_status: 'Time Out' 
-                }, {
-                    where: { 
-                        created_at: today,
-                        endTime: currentTime
-                    }
-                }).then(() => {
-                    console.log('updated record');
-                })
-            }
-            else{}
+            BookingModel.update({
+                parking_status: 'Time Out' 
+            }, {
+                where: { 
+                    payment_status:'SUCCESS',
+                    endTime: currentTime
+                }
+            }).then(() => {
+                console.log('updated record');
+            })
         }
+        else{}
     })
 });
 
