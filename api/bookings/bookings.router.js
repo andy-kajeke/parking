@@ -8,24 +8,6 @@ const BookingModel = require('./booking.model')
 
 BookingsRoute.use(cors());
 
-////////////////////////////////////Date and time//////////////////////////////////////////////////////////////
-var date = new Date();
-var monthNames = ["January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December"
-];
-
-let today = date.getFullYear() + "-" + ("0" + (date.getMonth() + 1)).slice(-2) + "-" + ("0" + date.getDate()).slice(-2);
-
-var hours = date.getHours();
-var minutes = date.getMinutes();
-var seconds = date.getSeconds();
-var ampm = hours >= 12 ? 'pm' : 'am';
-hours = hours % 12;
-hours = hours ? hours : 12; // the hour '0' should be '12'
-minutes = minutes < 10 ? '0' + minutes : minutes;
-
-var currentTime = hours + ':' + minutes + ':' + seconds + ' ' + ampm;
-
 //////////////////////////////////Get all by month and year//////////////////////////////////////////////////////////////////////
 BookingsRoute.get('/:month/:year', (req, res) => {
     BookingModel.findAll(
@@ -50,11 +32,32 @@ BookingsRoute.get('/:year', (req, res) => {
         {
             where: {
                 year: req.params.year,
-                payment_status: 'SUCCESS',
+                payment_status: 'SUCCESS'
             },
             order: [
                 ['updated_at', 'ASC']
             ]
+        }
+    ).then(bookings => {
+        res.json({bookings})
+    });
+});
+
+//////////////////////////////////Get all by landlord_code//////////////////////////////////////////////////////////////////////
+BookingsRoute.get('/all/landlord/success/:landlord_code', (req, res) => {
+    var date = new Date();
+    var monthNames = ["January", "February", "March", "April", "May", "June",
+      "July", "August", "September", "October", "November", "December"
+    ];
+
+    BookingModel.findAll(
+        {
+            where: {
+                landlord_code: req.params.landlord_code,
+                payment_status: 'SUCCESS',
+                month: monthNames[date.getMonth()],
+                year: date.getFullYear()
+            }
         }
     ).then(bookings => {
         res.json({bookings})

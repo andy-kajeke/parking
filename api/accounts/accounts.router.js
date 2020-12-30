@@ -4,7 +4,8 @@ const fetch = require('node-fetch');
 const AccountsRoute = express.Router();
 const crypto = require("crypto");
 const randomize = require('randomatic');
-const WithdrawModel = require('./withdraws.model')
+const WithdrawModel = require('./withdraws.model');
+const AccountBalanceModel = require('./accountBalance.model')
 
 AccountsRoute.use(cors());
 
@@ -60,7 +61,7 @@ AccountsRoute.get('/withdraws', (req, res) => {
 
 //////////////////////////////////Get all withdraws by business code////////////////////////////////////////////////////////
 AccountsRoute.get('/withdraws/:landlord_code', (req, res) => {
-    WithdrawModel.findAll({
+    WithdrawModel.findOne({
         where: {
             landlord_code: req.params.landlord_code,
         }

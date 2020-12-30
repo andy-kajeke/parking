@@ -263,7 +263,11 @@ usersRoute.post('/reset_password/', (req, res) => {
 
 //////////////////////////////////Get all app users////////////////////////////////////////////
 usersRoute.get('/', (req, res) => {
-    AppusersModel.findAll().then((app_users) => {
+    AppusersModel.findAll({
+        order: [
+            ['username', 'ASC']
+        ]
+    }).then((app_users) => {
         res.json({app_users});
     })
 })

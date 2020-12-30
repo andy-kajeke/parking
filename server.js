@@ -101,13 +101,6 @@ cronJob.schedule('* * * * * *', () => {
     })
 });
 
-// cronJob.schedule('* * * * * *', () => {
-//     parkingStatus_startTime.start();
-// });
-// cronJob.schedule('* * * * * *', () => {
-//     parkingStatus_endTime.start();
-// });
-
 const adminRouter = require('./api/admin/admin.router');
 const appusersRouter = require('./api/app_users/appusers.router');
 const businessRouter = require('./api/business/business.router');
@@ -117,6 +110,7 @@ const accountsRouter = require('./api/accounts/accounts.router');
 const bookingsRouter = require('./api/bookings/bookings.router');
 const calendarRouter = require('./api/calendar/calendar.router');
 const supportRouter = require('./api/support/support.router');
+const tenantRouter = require('./api/tenants/tenants.router');
 
 app.use('/webapi/adminuser', adminRouter);
 app.use('/webapi/appuser', appusersRouter);
@@ -127,5 +121,5 @@ app.use('/webapi/accounts', accountsRouter);
 app.use('/webapi/bookings', bookingsRouter);
 app.use('/webapi/calendar', calendarRouter);
 app.use('/webapi/support', supportRouter);
-app.use('/item_photo', express.static('item_photos/'));
-
+app.use('/webapi/tenant', tenantRouter);
+app.use('/tenant_photo', express.static('tenant_photos/'));

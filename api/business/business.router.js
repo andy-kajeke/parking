@@ -105,18 +105,18 @@ usersRoute.post('/portal/login', (req, res) => {
             if (user) {
                 if (compareSync(req.body.password, user.password)) {
                     let token = jwt.sign(user.dataValues, process.env.SECURITY_KEY, {
-                        expiresIn: "28d"
+                        expiresIn: "2h"
                     });
-                    //res.send(token);
-                    res.json({
-                        is_user: true,
-                        id: user.id,
-                        property_name: user.property_name,
-                        landlord_code: user.landlord_code,
-                        email: user.email,
-                        message: 'Logged in successfully',
-                        userToken: token
-                    });
+                    res.send(token);
+                    // res.json({
+                    //     is_user: true,
+                    //     id: user.id,
+                    //     property_name: user.property_name,
+                    //     landlord_code: user.landlord_code,
+                    //     email: user.email,
+                    //     message: 'Logged in successfully',
+                    //     userToken: token
+                    // });
                 } else {
                     res.json({
                         is_user: false,
@@ -205,7 +205,7 @@ usersRoute.put('/change_password/:id', (req, res) => {
 });
 
 /////////////////////////////////////Allow users to rest passwords/////////////////////////////////////////////////
-usersRoute.post('/forgot_password/', (req, res) => {
+usersRoute.post('/forgot_password', (req, res) => {
     var vaildationCode = randomize('0', 5);
 
     BusinessAdminModel.findOne({
@@ -232,7 +232,7 @@ usersRoute.post('/forgot_password/', (req, res) => {
                 from: process.env.EMAIL, 
                 to: user.email,
                 subject: 'Rest Mi-space Account Password',
-                text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. Use this verification code'+
+                text: 'Hello ' + user.username + ', \nYour request to reset password has been acknowledged by mi-space. \nUse this verification code'+
                 ' '+ vaildationCode + ' to reset password'
             }
 

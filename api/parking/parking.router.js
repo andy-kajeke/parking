@@ -294,7 +294,7 @@ ParkingRoute.post('/deposit/payment/booking', (req, res) => {
     //http://vendors-gpaid.akhaninnovates.com
 
     if(res.statusCode == 200){
-        fetch('http://vendors-gpaid.akhaninnovates.com/webapi/transaction/deposit', {
+        fetch('https://vendors-gpaid.akhaninnovates.com/webapi/transaction/deposit', {
             method: 'POST',
             body: JSON.stringify(paymentData),
             headers: { 'Content-Type': 'application/json' }
@@ -486,13 +486,10 @@ ParkingRoute.get('/bookings/all/value/accountBalances', (req, res) => {
 
 /////////////////////////////////////Get account balances by landlord_code//////////////////////////////////////////////
 ParkingRoute.get('/bookings/all/value/accountBalances/:landlord_code', (req, res) => {
-    AccountBalanceModel.findAll({
+    AccountBalanceModel.findOne({
         where:{
             landlord_code: req.params.landlord_code
-        },
-        order : [
-            ['created_at', 'DESC']
-        ]
+        }
     }).then(accounts => res.json({ accounts }));
 });
 
